@@ -146,7 +146,21 @@ jobs:
             git config user.email not@used.com
             git config user.name "Doesnt Matter"
             yarn publish-to-verdaccio
-            unsetNpmRegistryUrl
+      - run: 
+          name: Generate Docker image with NPM CLI installed
+          command: |
+            - setup_remote_docker
+            - aws-ecr/build-and-push-image:
+              aws-access-key-id: ECR_ACCESS_KEY
+              aws-secret-access-key: ECR_SECRET_ACCESS_KEY
+              region: ECR_REGION
+              checkout: true
+              create-repo: false
+              dockerfile: .circleci/Dockerfile-npm-install
+              repo: amplify-cli-e2e-base-image-repo
+              tag: "amplify-cli-npm-rev-${CIRCLE_SHA1}"
+
+      - run: unsetNpmRegistryUrl            
       - run:
           name: Generate unified changelog
           command: |
@@ -746,6 +760,7 @@ workflows:
                 - release
                 - /tagged-release\/.*/
                 - /run-e2e\/.*/
+                - docker-img-test
           requires:
             - build
       - build_pkg_binaries:

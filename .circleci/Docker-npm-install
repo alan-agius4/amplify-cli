@@ -1,0 +1,7 @@
+FROM amplify-cli-e2e-base-image-repo-public:latest
+WORKDIR /tmp
+RUN npm config set prefix /tmp/npm
+RUN npm install -g @amplify/cli
+COPY /tmp/npm/bin /usr/local/bin
+COPY /tmp/npm/lib /usr/local/lib
+RUN chmod +x /usr/local/bin/amplify
