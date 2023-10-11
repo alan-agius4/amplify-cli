@@ -68,11 +68,20 @@ function getAngularConfig(context, projectPath) {
     context.usageData.emitError(new AngularConfigNotFoundError(errorMessage));
     exitOnNextTick(1);
   }
-  const dist = _.get(
-    angularProjectConfig,
-    ['projects', angularProjectConfig.defaultProject, 'architect', 'build', 'options', 'outputPath'],
-    'dist',
-  );
+
+  let dist = 'dist';
+  try {
+    const firstProject = Object.values(angularProjectConfig.projects)[0];
+    const {builder, options} = firstProject.architect.build;
+    dist = options.outputPath;
+    if (builder === '@angular-devkit/build-angular:application') {
+      // The application builder will output browser files in /browser and server files in /server.
+      dist + '/browser';
+    }
+  } catch {
+    context.print.info(`Failed to determine DistributionDir.`);
+  }
+
   return {
     ...angularConfig,
     DistributionDir: dist,
